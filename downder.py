@@ -1,14 +1,19 @@
-import requests, time, os, sys
+import requests, time, os, sys, re, uuid
 
 def dl(url):
     start = time.time()
 
     res = requests.get(url, stream=True)
+    content_type = res.headers['content-type']
+    if content_type:
+        f_ex = "."+re.split("/", content_type)[1]
+    f_name = os.path.basename(url)
+    if f_name.endswith(f_ex) == False:
+        f_name = str(uuid.uuid4())
     content_length = int(res.headers['content-length'])
-    fname = os.path.basename(url)
 
-    print(fname)
-    with open(fname, 'wb') as f:
+    print("filename: ", f_name)
+    with open(f_name, 'wb') as f:
         if content_length is None: # no content length header(no body)
             f.write(res.content)
         else: #has body for download
@@ -24,7 +29,7 @@ def dl(url):
 def main():
     try:
         dl(sys.argv[1])
-    except:
-        print("ERROR!")
+    except Exception as e:
+        print(e)
 
 main()
